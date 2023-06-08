@@ -12,15 +12,16 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/asmundur31/Treadmill.git"
+    "url": "git+https://github.com/asmundur31/Treadmill2.0.git"
   },
   "author": "Ásmundur",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/asmundur31/Treadmill/issues"
+    "url": "https://github.com/asmundur31/Treadmill2.0/issues"
   },
-  "homepage": "https://github.com/asmundur31/Treadmill#readme",
+  "homepage": "https://github.com/asmundur31/Treadmill2.0#readme",
   "dependencies": {
+    "child_process": "^1.0.2",
     "dotenv": "^16.0.3",
     "ejs": "^3.1.8",
     "express": "^4.18.1",

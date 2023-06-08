@@ -4,6 +4,7 @@
 import express from 'express';
 import fs from 'fs';
 import { getRoutes, getRouteById, getRecordings, getRecordingById, getTests, getTestById, saveRecording } from './db.js';
+import { exec } from 'child_process';
 
 export const router = express.Router();
 
@@ -53,4 +54,23 @@ router.post('/recordings', async (req, res) => {
   } catch(error) {
     return res.status(400).send('Database error');
   }
+});
+
+router.get('/treadmill', async (rec, res) => {
+  const pythonScript = './server/python/treadmill.py';
+
+  exec(`python3.7 ${pythonScript}`, (error, stdout, stderr) => {
+    if (error) {
+      console.error(`Error executing Python script: ${error.message}`);
+      return res.status(500).send('Error executing Python script');
+    }
+
+    if (stderr) {
+      console.error(`Python script encountered an error: ${stderr}`);
+      return res.status(500).send('Python script error');
+    }
+
+    console.log(`Python script output: ${stdout}`);
+    res.send(stdout);
+  });
 });
