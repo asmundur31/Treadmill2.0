@@ -56,9 +56,50 @@ router.post('/recordings', async (req, res) => {
   }
 });
 
-router.get('/treadmill', async (rec, res) => {
-  const pythonScript = './server/python/treadmill.py';
+router.get('/treadmill_speed/:speed', async (req, res) => {
+  const { speed } = req.params;
+  const pythonScript = './server/python/speed.py';
+  const scriptArguments = [speed];
+  const argumentString = scriptArguments.join(' ');
+  exec(`python3.7 ${pythonScript} ${argumentString}`, (error, stdout, stderr) => {
+    if (error) {
+      console.error(`Error executing Python script: ${error.message}`);
+      return res.status(500).send('Error executing Python script');
+    }
 
+    if (stderr) {
+      console.error(`Python script encountered an error: ${stderr}`);
+      return res.status(500).send('Python script error');
+    }
+
+    console.log(`Python script output: ${stdout}`);
+    res.send(stdout);
+  });
+});
+
+router.get('/treadmill_incline/:incline', async (req, res) => {
+  const { incline } = req.params;
+  const pythonScript = './server/python/incline.py';
+  const scriptArguments = [incline];
+  const argumentString = scriptArguments.join(' ');
+  exec(`python3.7 ${pythonScript} ${argumentString}`, (error, stdout, stderr) => {
+    if (error) {
+      console.error(`Error executing Python script: ${error.message}`);
+      return res.status(500).send('Error executing Python script');
+    }
+
+    if (stderr) {
+      console.error(`Python script encountered an error: ${stderr}`);
+      return res.status(500).send('Python script error');
+    }
+
+    console.log(`Python script output: ${stdout}`);
+    res.send(stdout);
+  });
+});
+
+router.get('/treadmill_stop', async (req, res) => {
+  const pythonScript = './server/python/stop.py';
   exec(`python3.7 ${pythonScript}`, (error, stdout, stderr) => {
     if (error) {
       console.error(`Error executing Python script: ${error.message}`);
@@ -74,3 +115,41 @@ router.get('/treadmill', async (rec, res) => {
     res.send(stdout);
   });
 });
+
+router.get('/treadmill_auto_stop', async (req, res) => {
+  const pythonScript = './server/python/auto_stop.py';
+  exec(`python3.7 ${pythonScript}`, (error, stdout, stderr) => {
+    if (error) {
+      console.error(`Error executing Python script: ${error.message}`);
+      return res.status(500).send('Error executing Python script');
+    }
+
+    if (stderr) {
+      console.error(`Python script encountered an error: ${stderr}`);
+      return res.status(500).send('Python script error');
+    }
+
+    console.log(`Python script output: ${stdout}`);
+    res.send(stdout);
+  });
+});
+
+router.get('/treadmill_start', async (req, res) => {
+  const pythonScript = './server/python/start.py';
+  exec(`python3.7 ${pythonScript}`, (error, stdout, stderr) => {
+    if (error) {
+      console.error(`Error executing Python script: ${error.message}`);
+      return res.status(500).send('Error executing Python script');
+    }
+
+    if (stderr) {
+      console.error(`Python script encountered an error: ${stderr}`);
+      return res.status(500).send('Python script error');
+    }
+
+    console.log(`Python script output: ${stdout}`);
+    res.send(stdout);
+  });
+});
+
+
