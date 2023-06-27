@@ -4,4 +4,4 @@ from trackmaster import Treadmill
 port = sys.argv[1]
 t = Treadmill(port)
 
-t.stop_belt()
+print(t.get_actual_elevation())

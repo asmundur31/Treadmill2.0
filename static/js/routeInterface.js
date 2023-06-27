@@ -52,10 +52,7 @@ startRouteButton.addEventListener('click', async () => {
   var routeId = window.location.pathname;
   routeId = parseInt(routeId[routeId.length-1]);
   await startTreadmill();
-  setTimeout(async () => {
-    setTreadmillSpeed(3);
-    await startRouteInterval(routeId);
-  }, 2000);
+  await startRouteInterval(routeId);
   startRecording();
   videoElement.play();
 });
@@ -85,7 +82,7 @@ videoElement.addEventListener('ended', async () => {
  * bluetooth.
  */
 export function updateInterfaceTreadmillConnected() {
-  showToast('Successful connection', 'Treadmill device is connected via bluetooth.', 'success');
+  showToast('Successful connection', 'Treadmill device is connected via USB.', 'success');
   connectTreadmillButton.classList.add('d-none');
   disconnectTreadmillButton.classList.remove('d-none');
   routeControlsOverlay.classList.remove('d-none');
@@ -96,7 +93,7 @@ export function updateInterfaceTreadmillConnected() {
  * bluetooth.
  */
  export function updateInterfaceTreadmillDisconnected() {
-  showToast('Successful disconnection', 'Treadmill device has disconnected from bluetooth.', 'success');
+  showToast('Successful disconnection', 'Treadmill device has disconnected.', 'success');
   connectTreadmillButton.classList.remove('d-none');
   disconnectTreadmillButton.classList.add('d-none');
   routeControlsOverlay.classList.add('d-none');
@@ -185,8 +182,8 @@ export function getVideoCurrentTime() {
  * Function that displays the cooldown for sec seconds
  */
 async function startCooldown(sec) {
-  setTreadmillSpeed(3);
-  setTreadmillIncline(0);
+  await setTreadmillSpeed(3);
+  await setTreadmillIncline(0);
   videoElement.pause();
   // Cooldown
   cooldownCountdownOverlay.classList.remove('d-none');

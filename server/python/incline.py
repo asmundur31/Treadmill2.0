@@ -1,7 +1,8 @@
 import sys
 from trackmaster import Treadmill
 
-t = Treadmill('/dev/tty.usbserial-D30B78YP')
+port = sys.argv[1]
+t = Treadmill(port)
 
-incline = sys.argv[1]
+incline = sys.argv[2]
 t.incline = float(incline)

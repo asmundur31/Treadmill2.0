@@ -23,3 +23,9 @@ export function showToast(title, message, status) {
   var toast = new bootstrap.Toast(toastElement);
   toast.show();
 }
+
+export async function getRequest(url) {
+  var file = await fetch(`${window.location.origin}${url}`);
+  var data = await file.json();
+  return data;
+}

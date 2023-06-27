@@ -1,7 +1,8 @@
 import sys
 from trackmaster import Treadmill
 
-t = Treadmill('/dev/tty.usbserial-D30B78YP')
+port = sys.argv[1]
+t = Treadmill(port)
 
-speed = sys.argv[1]
+speed = sys.argv[2]
 t.speed = float(speed)

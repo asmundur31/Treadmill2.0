@@ -2,7 +2,7 @@
  * This module handles all connections via bluetooth to all devices.
  */
 import { showToast } from './utils.js';
-import TreadmillDevice from './treadmillDevice.js';
+import TreadmillDevice from './treadmillDeviceUSB.js';
 import HeartRateDevice from './hrDevice.js';
 import { 
   updateInterfaceTreadmillConnected,
@@ -47,18 +47,17 @@ disconnectHRButton.addEventListener('click', disconnectHR);
 
 // Listeners
 async function connectTreadmill() {
-  try {
-    // Connect to treadmill
-    await treadmillDevice.connect();
+  // Check if treadmill is connected
+  const success = await treadmillDevice.checkForTreadmill();
+  if(success) {
     // Update interface after treadmill connected
     updateInterfaceTreadmillConnected();
-  } catch (error) {
-    console.error(error);
+  } else {
+    showToast('Treadmill', 'Treadmill was not found at the port given.', 'fail');
   }
 }
 
 function disconnectTreadmill() {
-  treadmillDevice.disconnect();
   updateInterfaceTreadmillDisconnected();
 }
 
@@ -96,13 +95,13 @@ export function updateDisconnectedTreadmill(reason) {
 export function updateConnectedTreadmill() {
   treadmillMeasurements = {};
 }
-export function updateDataTreadmill(measurementType, treadmillMeasurement) {
-  updateInterfaceTreadmillSpeedText(treadmillMeasurement.speed);
-  updateInterfaceTreadmillInclineText(treadmillMeasurement.inclination);
-  if(treadmillMeasurements[measurementType] == undefined) {
-    treadmillMeasurements[measurementType] = [];
+export function updateTreadmillData(treadmillData) {
+  updateInterfaceTreadmillSpeedText(treadmillData.speed);
+  updateInterfaceTreadmillInclineText(treadmillData.inclination);
+  if(treadmillMeasurements[treadmillData.measurementType] == undefined) {
+    treadmillMeasurements[treadmillData.measurementType] = [];
   }
-  treadmillMeasurements[measurementType].push(treadmillMeasurement);
+  treadmillMeasurements[treadmillData.measurementType].push(treadmillData);
 }
 
 export function updateDisconnectedHR(reason) {
@@ -136,39 +135,31 @@ export function updateDataHR(measurementType, heartRateMeasurement) {
 /**
  * Function that sets the incline on the treadmill
  */
-export function setTreadmillIncline(newIncline) {
+export async function setTreadmillIncline(newIncline) {
   console.log('Update incline on treadmill to '+newIncline);
-  treadmillDevice.increaseInclinationStep(10+newIncline, 0);
+  await treadmillDevice.setIncline(10+newIncline);
 }
 
 /**
  * Function that sets the speed on the treadmill
  */
- export function setTreadmillSpeed(newSpeed) {
+ export async function setTreadmillSpeed(newSpeed) {
   console.log('Update speed on treadmill to '+newSpeed);
-  treadmillDevice.increaseSpeedStep(newSpeed, 0);
+  await treadmillDevice.setSpeed(newSpeed);
 }
 
 /**
  * Function that starts the treadmill
  */
 export async function startTreadmill() {
-  try {
-    await treadmillDevice.changeTreadmillStatus('start');
-  } catch (e) {
-    console.error(e);
-  }
+  const result = await treadmillDevice.startTreadmill();
 }
 
 /**
  * Function that stops the treadmill
  */
  export async function stopTreadmill() {
-  try {
-    await treadmillDevice.changeTreadmillStatus('stop');
-  } catch (e) {
-    console.error(e);
-  }
+  const result = await treadmillDevice.stopTreadmill();
 }
 
 /**
@@ -189,6 +180,7 @@ export function startRecording() {
   console.log('Start recording');
   recordingStartTime = Date.now();
   treadmillMeasurements = {};
+  treadmillDevice.startCollectingData();
   heartRateMeasurements = {};
   routeData = {
     dataPoints: []
@@ -200,6 +192,7 @@ export function startRecording() {
  */
 export async function endRecording() {
   console.log('End recording');
+  treadmillDevice.stopCollectingData();
   recordingEndTime = Date.now();
   recordingDuration = recordingEndTime - recordingStartTime;
 
@@ -213,7 +206,7 @@ export async function endRecording() {
     startTime: recordingStartTime,
     endTime: recordingEndTime,
     devices: {
-      treadmill: treadmillDevice.device ? treadmillDevice.getDeviceName() : "Not connected",
+      treadmill: "Via USB",
       hr: heartRateDevice.device ? heartRateDevice.getDeviceName() : "Not connected"
     }
   };

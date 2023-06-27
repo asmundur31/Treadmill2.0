@@ -31,11 +31,11 @@ export async function startRouteInterval(routeId) {
   incline = inclineList;
   videoSpeedUnit = (totDist[totDist.length-1]/getVideoTotalTime())*3.6;
   // Start interval
-  videoInterval = window.setInterval(function() {
+  videoInterval = window.setInterval(async () => {
     // 1. Route calculations
     var newData = calcNewData();
     // 2. Request incline change
-    setTreadmillIncline(newData.incline);
+    await setTreadmillIncline(newData.incline);
     // 3. Update interface
     updateInterfaceByVideoProgress(newData);
   }, videoIntervalTime);
