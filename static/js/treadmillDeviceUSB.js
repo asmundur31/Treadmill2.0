@@ -71,7 +71,7 @@ export default class TreadmillDevice {
   }
   getDummyData = async () => {
     this.speed = 5;
-    this.incline = 2;
+    this.incline = 10;
     const data = {
       speed: this.speed,
       inclination: this.incline,
