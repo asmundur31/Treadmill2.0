@@ -5,15 +5,23 @@ import {
   updateInterfaceByVideoProgress } from './routeInterface.js';
 import { 
   setTreadmillIncline,
-  setRouteNameAndType
+  setRouteNameAndType,
+  getTreadmillData,
+  updateTreadmillData,
+  setTreadmillSpeed,
+  updateVideoSpeedByTreadmillSpeed
  } from './connectBluetooth.js';
 
+// Route data
 var videoInterval = {};
 var totalDistance = {};
 var incline = {};
 var elevation = {};
-var videoSpeedUnit = 1; // average speed in km/h that eaquals video speed 1x
-var videoIntervalTime = 1000;
+var videoSpeedUnit = 7; // average speed in km/h that eaquals video speed 1x
+var videoIntervalTime = 500;
+
+// Real data
+var distance = 0;
 
 /**
  * Function that starts a interval for the route data
@@ -30,14 +38,31 @@ export async function startRouteInterval(routeId) {
   totalDistance = totDist;
   incline = inclineList;
   videoSpeedUnit = (totDist[totDist.length-1]/getVideoTotalTime())*3.6;
+  // Update real values
+  distance = 0;
   // Start interval
   videoInterval = window.setInterval(async () => {
     // 1. Route calculations
     var newData = calcNewData();
-    // 2. Request incline change
-    await setTreadmillIncline(newData.incline);
-    // 3. Update interface
-    updateInterfaceByVideoProgress(newData);
+    // 2. Get speed and incline from treadmill
+    getTreadmillData()
+    .then(async (treadmillData) => {
+      // 3. update video speed by treadmill speed
+      updateVideoSpeedByTreadmillSpeed(treadmillData.speed);
+      // 4. Request incline change
+      await setTreadmillIncline(newData.incline);
+      var data = {
+        speed: treadmillData.speed,
+        inclination: treadmillData.incline,
+        distance: distance,
+        time: Date.now(),
+        measurementType: 'FTMS'
+      };
+      distance += videoIntervalTime*(1/3600)*treadmillData.speed;
+      // 5. Update interface
+      updateTreadmillData(data);
+      updateInterfaceByVideoProgress(newData);
+    });
   }, videoIntervalTime);
 }
 

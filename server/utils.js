@@ -26,3 +26,8 @@ function formatDate(date) {
   datestring += parseInt(d.getSeconds()) >= 10 ? d.getSeconds() : '0'+d.getSeconds();
   return datestring;
 }
+/* Function that rounds to the nearest half */
+export function roundToNearestHalf(number) {
+  var roundedNumber = Math.round(number * 2) / 2;
+  return roundedNumber;
+}

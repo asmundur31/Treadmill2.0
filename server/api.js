@@ -5,6 +5,7 @@ import express from 'express';
 import fs from 'fs';
 import { getRoutes, getRouteById, getRecordings, getRecordingById, getTests, getTestById, saveRecording } from './db.js';
 import { exec } from 'child_process';
+import { roundToNearestHalf } from './utils.js';
 
 export const router = express.Router();
 
@@ -65,6 +66,8 @@ router.get('/treadmill_check', async (req, res) => {
     var success = true;
     if (error || stderr) {
       success = false;
+      console.log(error);
+      console.log(stderr);
     }
     res.send({success: success});
   });
@@ -85,14 +88,14 @@ router.get('/treadmill_speed/:speed', async (req, res) => {
       return res.status(500).send('Python script error');
     }
     console.log(`Python script output: ${stdout}`);
-    res.send(stdout);
+    res.send({status: 'Success'});
   });
 });
 
 router.get('/treadmill_incline/:incline', async (req, res) => {
   const { incline } = req.params;
   const pythonScript = './server/python/incline.py';
-  const scriptArguments = [incline];
+  const scriptArguments = [roundToNearestHalf(incline)];
   const argumentString = scriptArguments.join(' ');
   exec(`python3.7 ${pythonScript} ${USBPort} ${argumentString}`, (error, stdout, stderr) => {
     if (error) {
@@ -104,7 +107,7 @@ router.get('/treadmill_incline/:incline', async (req, res) => {
       return res.status(500).send('Python script error');
     }
     console.log(`Python script output: ${stdout}`);
-    res.send(stdout);
+    res.send({status: 'Success'});
   });
 });
 
@@ -120,23 +123,7 @@ router.get('/treadmill_stop', async (req, res) => {
       return res.status(500).send('Python script error');
     }
     console.log(`Python script output: ${stdout}`);
-    res.send(stdout);
-  });
-});
-
-router.get('/treadmill_auto_stop', async (req, res) => {
-  const pythonScript = './server/python/auto_stop.py';
-  exec(`python3.7 ${pythonScript} ${USBPort}`, (error, stdout, stderr) => {
-    if (error) {
-      console.error(`Error executing Python script: ${error.message}`);
-      return res.status(500).send('Error executing Python script');
-    }
-    if (stderr) {
-      console.error(`Python script encountered an error: ${stderr}`);
-      return res.status(500).send('Python script error');
-    }
-    console.log(`Python script output: ${stdout}`);
-    res.send(stdout);
+    res.send({status: 'Success'});
   });
 });
 
@@ -152,7 +139,7 @@ router.get('/treadmill_start', async (req, res) => {
       return res.status(500).send('Python script error');
     }
     console.log(`Python script output: ${stdout}`);
-    res.send(stdout);
+    res.json({status: 'Success'});
   });
 });
 
@@ -168,8 +155,24 @@ router.get('/treadmill_speed', async (req, res) => {
       console.error(`Python script encountered an error: ${stderr}`);
       return res.status(500).send('Python script error');
     }
-    console.log(`Python script output: ${stdout}`);
-    res.send(stdout);
+    console.log(`Python script output speed: ${stdout}`);
+    res.json({speed: stdout});
+  });
+});
+
+router.get('/treadmill_speed_dummy', async (req, res) => {
+  const pythonScript = './server/python/get_speed_dummy.py';
+  exec(`python3.7 ${pythonScript} ${USBPort}`, (error, stdout, stderr) => {
+    if (error) {
+      console.error(`Error executing Python script: ${error.message}`);
+      return res.status(500).send('Error executing Python script');
+    }
+    if (stderr) {
+      console.error(`Python script encountered an error: ${stderr}`);
+      return res.status(500).send('Python script error');
+    }
+    console.log(`Python script output speed: ${stdout}`);
+    res.json({speed: stdout});
   });
 });
 
@@ -184,7 +187,23 @@ router.get('/treadmill_incline', async (req, res) => {
       console.error(`Python script encountered an error: ${stderr}`);
       return res.status(500).send('Python script error');
     }
-    console.log(`Python script output: ${stdout}`);
-    res.send(stdout);
+    console.log(`Python script output inline: ${stdout}`);
+    res.json({incline: stdout});
+  });
+});
+
+router.get('/treadmill_incline_dummy', async (req, res) => {
+  const pythonScript = './server/python/get_incline_dummy.py';
+  exec(`python3.7 ${pythonScript} ${USBPort}`, (error, stdout, stderr) => {
+    if (error) {
+      console.error(`Error executing Python script: ${error.message}`);
+      return res.status(500).send('Error executing Python script');
+    }
+    if (stderr) {
+      console.error(`Python script encountered an error: ${stderr}`);
+      return res.status(500).send('Python script error');
+    }
+    console.log(`Python script output inline: ${stdout}`);
+    res.json({incline: stdout});
   });
 });

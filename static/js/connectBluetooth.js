@@ -14,7 +14,9 @@ import {
   updateInterfaceHRText,
   updateInterfaceVideoSpeed
 } from './routeInterface.js';
-import { getVideoSpeedUnit } from './routeCalculations.js';
+import { 
+  getVideoSpeedUnit,
+  startRouteInterval } from './routeCalculations.js';
 import { saveRecording } from './dataFetch.js';
 
 // Devices
@@ -145,7 +147,16 @@ export async function setTreadmillIncline(newIncline) {
  */
  export async function setTreadmillSpeed(newSpeed) {
   console.log('Update speed on treadmill to '+newSpeed);
-  await treadmillDevice.setSpeed(newSpeed);
+  return await treadmillDevice.setSpeed(newSpeed);
+}
+
+/**
+ * Function that gets the speed and incline on the treadmill
+ */
+export async function getTreadmillData() {
+  var speed = await treadmillDevice.getSpeed();
+  var incline = await treadmillDevice.getIncline();
+  return {speed: speed, incline: incline};
 }
 
 /**
@@ -160,13 +171,13 @@ export async function startTreadmill() {
  */
  export async function stopTreadmill() {
   const result = await treadmillDevice.stopTreadmill();
+  return result;
 }
 
 /**
  * Function that updates the video speed by treadmill speed
  */
- export function updateVideoSpeedByTreadmillSpeed(treadmillMeasurement) {
-  var treadmillSpeed = treadmillMeasurement.speed;
+ export function updateVideoSpeedByTreadmillSpeed(treadmillSpeed) {
   var videoSpeedUnit = getVideoSpeedUnit();
   var newVideoSpeed = treadmillSpeed*1.2/videoSpeedUnit;
   updateInterfaceVideoSpeed(newVideoSpeed);
@@ -180,7 +191,6 @@ export function startRecording() {
   console.log('Start recording');
   recordingStartTime = Date.now();
   treadmillMeasurements = {};
-  treadmillDevice.startCollectingData();
   heartRateMeasurements = {};
   routeData = {
     dataPoints: []
@@ -192,7 +202,6 @@ export function startRecording() {
  */
 export async function endRecording() {
   console.log('End recording');
-  treadmillDevice.stopCollectingData();
   recordingEndTime = Date.now();
   recordingDuration = recordingEndTime - recordingStartTime;
 

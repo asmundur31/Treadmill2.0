@@ -26,6 +26,17 @@ export function showToast(title, message, status) {
 
 export async function getRequest(url) {
   var file = await fetch(`${window.location.origin}${url}`);
-  var data = await file.json();
-  return data;
+  if(file.ok) {
+    try {
+      var data = await file.json();
+      return data;
+    } catch (error) {
+      console.error('Error parsing JSON:', error);
+      return null;
+    }
+  } else {
+    console.log(url);
+    console.error('Request failed with status:', file.status);
+    return null;
+  }
 }

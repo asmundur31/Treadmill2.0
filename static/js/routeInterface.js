@@ -45,26 +45,37 @@ var inclineText = document.getElementById('incline_text');
 
 // Listeners
 startRouteButton.addEventListener('click', async () => {
+  startRouteButton.classList.add('d-none');
   // Go to fullscreen and make sure we are at the top
   videoContainer.classList.add('fullscreen');
   $('html,body').scrollTop(0);
   // Get the id of the route from the pathname
   var routeId = window.location.pathname;
   routeId = parseInt(routeId[routeId.length-1]);
-  await startTreadmill();
-  await startRouteInterval(routeId);
-  startRecording();
-  videoElement.play();
+  startTreadmill()
+  .then(() => {
+    startRecording();
+    startRouteInterval(routeId);
+    videoElement.play();
+  });
 });
 
 pauseRouteButton.addEventListener('click', async () => {
-  videoElement.pause();
+  if (!video.paused) {
+    videoElement.pause();
+    pauseRouteButton.innerText = 'Resume';
+  } else {
+    videoElement.play();
+    pauseRouteButton.innerText = 'Pause';
+  }
 });
 
 endRouteButton.addEventListener('click', async () => {
-  stopRouteInterval();
-  await startCooldown(10);
   await endRecording();
+  stopRouteInterval();
+  setTimeout(async () => {
+    await startCooldown(10);
+  }, 1000);
 });
 
 fullscreenButton.addEventListener('click', () => {
@@ -72,9 +83,11 @@ fullscreenButton.addEventListener('click', () => {
 });
 
 videoElement.addEventListener('ended', async () => {
-  stopRouteInterval();
-  await startCooldown(60);
   await endRecording();
+  stopRouteInterval();
+  setTimeout(async () => {
+    await startCooldown(10);
+  }, 1000);
 });
 
 /**
@@ -192,9 +205,9 @@ async function startCooldown(sec) {
   var countdownInterval = setInterval(async () => {
     if(timeleft <= 0) {
       await stopTreadmill();
-      await stopRouteInterval();
       cooldownCountdownOverlay.classList.add('d-none');
       videoContainer.classList.remove('fullscreen');
+      startRouteButton.classList.remove('d-none');
       clearInterval(countdownInterval);
       videoElement.currentTime = 0;
     }
